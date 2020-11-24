@@ -1,14 +1,11 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <unordered_map>
 #include <vector>
 
 #include "def.h"
 #include "object.h"
 #include "renderer.h"
-
-typedef char* UUID;
 
 class Scene {
 	public:
@@ -17,14 +14,15 @@ class Scene {
 		void attachRenderer(Renderer * renderer);
 
 		void update(const long int &time);
-		void render();
+		void render(const vec3f &camera_position, const vec3f &camera_rotation) const;
 
 		void addObject(Object * object);
 		void removeObject(UUID uuid);
 
+		Renderer * getRenderer();
+
 	private:
-		std::unordered_map<UUID, Object*> m_objects;
-		std::vector<UUID> m_objects_uuid;
+		std::vector<Object*> m_objects;
 
 		Renderer * m_renderer;
 };

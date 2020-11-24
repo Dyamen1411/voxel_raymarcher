@@ -3,25 +3,29 @@
 
 #include <unordered_map>
 
-#include "def.h"
 #include "object.h"
 
 class Renderer {
 	public:
-		typedef char u8;
-		typedef char* UUID;
-
-		Renderer(const int &width, const int &height);
+		Renderer(const int &width, const int &height, const float &fov);
 		~Renderer();
+		
+		void updateFOV(const float &fov);
+		void updateRenderingPlane();
 
-		void render(const std::unordered_map<UUID, Object*> &objects);
+		void render(const vec3f &camera_position, const vec3f &camera_rotation, const std::vector<Object*> &objects);
 
-		u8 * getScreenBuffer() const;
+		u32 * getScreenBuffer() const;
 
 	private:
+		float m_distance_to_plane;
+		float * m_rendering_plane_x;
+		float * m_rendering_plane_y;
+
 		int m_width, m_height;
+		float m_aspect_ratio;
 		double * m_depth_buffer;
-		u8 * m_screen_buffer;
+		u32 * m_screen_buffer;
 };
 
 #endif

@@ -1,4 +1,4 @@
-.PHONY=all run clean
+.PHONY=all build run clean
 
 APP_NAME=app
 
@@ -7,6 +7,7 @@ ifeq ($(OS),Windows_NT)
 endif
 
 LFLAGS=-lm
+FLAGS=`sdl2-config --cflags --libs`
 
 SRC_DIR=src
 INC_DIR=inc
@@ -17,9 +18,13 @@ CC=g++
 SRCS:=$(wildcard $(SRC_DIR)/*.cpp)
 BINS:=$(SRCS:$(SRC_DIR)/%.cpp=$(BIN_DIR)/%.o)
 
-all: $(BINS)
+all:
+	@make clean
+	@make build
+
+build: $(BINS)
 	@echo "Building..."
-	@$(CC) $(LFLAGS) $(BINS) -o $(APP_NAME)
+	@$(CC) $(LFLAGS) $(BINS) -o $(APP_NAME) $(FLAGS)
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Creating object.."
