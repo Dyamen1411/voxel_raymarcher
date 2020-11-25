@@ -1,4 +1,6 @@
-.PHONY=all build run clean
+# ---
+# General infos
+# ---
 
 APP_NAME=app
 
@@ -6,33 +8,72 @@ ifeq ($(OS),Windows_NT)
 	APP_NAME+=.exe
 endif
 
-LFLAGS=-lm
+# ---
+# Build tools and flags
+# ---
+
+CC=g++
+GPU_CC:=
+
+NVCC_RESULT:=$(shell which nvcc 2> NULL)
+NVCC:=$(notdir $(NVCC_RESULT))
+
+ifeq ($(NVCC_TEST),nvcc)
+	GPU_CC:=nvcc
+else
+	GPU_CC:=g++
+	LFLAGS:=-lOpenCL $(LFLAGS)
+endif
+
+LFLAGS:=-lm
 FLAGS=`sdl2-config --cflags --libs`
+
+# ---
+# Directories and sources
+# ---
 
 SRC_DIR=src
 INC_DIR=inc
 BIN_DIR=bin
 
-CC=g++
-
-SRCS:=$(wildcard $(SRC_DIR)/*.cpp)
+SRCS:=$(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/**/*.cpp)
 BINS:=$(SRCS:$(SRC_DIR)/%.cpp=$(BIN_DIR)/%.o)
 
-all:
-	@make clean
-	@make build
+# ---
+# General targets
+# ---
 
-build: $(BINS)
-	@echo "Building..."
-	@$(CC) $(LFLAGS) $(BINS) -o $(APP_NAME) $(FLAGS)
+# Default target
+all: build
 
-$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@echo "Creating object.."
-	@$(CC) -c $< -I$(INC_DIR) -o $@
+# Build target
+build: $(APP_NAME)
 
-run:
+# Clean target
+clean:
+	@rm -rf $(BINS)
+
+# Rebuild everything
+re: clean build
+
+# Run the app
+run: $(APP_NAME)
 	@./$(APP_NAME)
 
-clean:
-	@echo "Cleaning up..."
-	@rm -rvf $(BINS)
+
+.PHONY: all build clean re run 
+
+# ---
+# Build targets and rules
+# ---
+
+# Linking the app
+$(APP_NAME): $(BINS)
+	@echo "Linking..."
+	$(CC) $(BINS) -o $(APP_NAME) $(LFLAGS) $(FLAGS)
+
+# Rule for make each objects files
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(@D)
+	@echo "$(CC) $<..."
+	@$(CC) -c $< -I$(INC_DIR) -o $@
