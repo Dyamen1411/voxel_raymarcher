@@ -130,27 +130,27 @@ void clearBuffer(T * buffer, const int &size) {
 }
 
 void Renderer_CPU::render(const vec3f &camera_position, const vec3f &camera_rotation, const std::vector<Object*> &objects) {
-	clearBuffer(Renderer::m_screen_buffer, Renderer::m_width*Renderer::m_height);
-	clearBuffer(Renderer::m_depth_buffer, Renderer::m_width*Renderer::m_height);
+	clearBuffer(m_screen_buffer, m_width*m_height);
+	clearBuffer(m_depth_buffer, m_width*m_height);
 
 	int pointer = 0;
 
 	const mat3f view_to_world = viewMatrix(camera_position, { 0, 0, 0 }, { 0, 1, 0 });
 
-	for (int y = 0; y < Renderer::m_height; ++y) {
-		for (int x = 0; x < Renderer::m_width; ++x) {
-			const vec3f view_dir = mul(view_to_world, normalize(vec3f { Renderer::m_rendering_plane_x[x], Renderer::m_rendering_plane_y[y], Renderer::m_distance_to_plane }));
+	for (int y = 0; y < m_height; ++y) {
+		for (int x = 0; x < m_width; ++x) {
+			const vec3f view_dir = mul(view_to_world, normalize(vec3f { m_rendering_plane_x[x], m_rendering_plane_y[y], m_distance_to_plane }));
 			
 			vec3f hit;
 			Object * closest;
 			float total_distance = 0;
 			
 			int has_hit = sceneSDF(camera_position, view_dir, objects, hit, total_distance, closest);
-			Renderer::m_depth_buffer[pointer] = total_distance;
+			m_depth_buffer[pointer] = total_distance;
 			
 			if (total_distance >= MAX_DISTANCE - EPSILON) {
 				u32 final_color = 0xFF << 24;
-				Renderer::m_screen_buffer[pointer] = final_color;
+				m_screen_buffer[pointer] = final_color;
 			} else {
 				vec3f pos = {
 					camera_position.x + total_distance * view_dir.x,
@@ -167,7 +167,7 @@ void Renderer_CPU::render(const vec3f &camera_position, const vec3f &camera_rota
 				
 				int final_color = 0xFF << 24 | ((u8) (color.x * 255)) << 16 | ((u8) (color.y * 255)) << 8 | (u8) (color.z * 255);
 				
-				Renderer::m_screen_buffer[pointer] = final_color;
+				m_screen_buffer[pointer] = final_color;
 			}
 
 			++pointer;
