@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <SDL2/SDL.h>
-
+#include "graphics/renderer_CPU.h"
 #include "scene.h"
 #include "sphere.h"
 #include "window.h"
@@ -15,8 +14,9 @@ int main(int argc, char ** argv) {
 	Window window(W, H);
 	window.init("test");
 
+	Renderer_CPU renderer(W, H, 90);
+
 	Scene scene;
-	Renderer renderer(W, H, 90);
 	scene.attachRenderer(&renderer);
 
 	Sphere sphere1(1, {0, 0, -5});
@@ -37,8 +37,8 @@ int main(int argc, char ** argv) {
 				exit = 1;
 			}
 		}
-
-		scene.render({0, sin(theta)/2., -1}, {0, 0, 0});
+		
+		scene.render({0, sin(theta)/2.f, -1}, {0, 0, 0});
 		u32 * screen_buffer = scene.getRenderer()->getScreenBuffer();
 		
 		window.updateFrameBuffer(screen_buffer);

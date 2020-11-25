@@ -5,7 +5,7 @@
 
 #include "def.h"
 #include "object.h"
-#include "renderer.h"
+#include "graphics/renderer.h"
 
 class Scene {
 	public:

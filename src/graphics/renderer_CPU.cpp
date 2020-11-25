@@ -1,48 +1,10 @@
 #include <math.h>
 
-#include "renderer.h"
+#include "graphics/renderer_CPU.h"
 
 #define EPSILON (float) .0001
 #define MAX_STEPS 255
 #define MAX_DISTANCE 10
-
-Renderer::Renderer(const int &width, const int &height, const float &fov) {
-	m_width = width;
-	m_height = height;
-
-	m_depth_buffer = (double*) malloc(m_width * m_height * sizeof(double));
-	m_screen_buffer = (u32*) malloc(m_width * m_height * sizeof(u32));
-	
-	m_rendering_plane_x = (float*) malloc(m_width * sizeof(float));
-	m_rendering_plane_y = (float*) malloc(m_height * sizeof(float));
-	
-	m_aspect_ratio = (float) m_width / (float) m_height;
-
-	updateFOV(fov);
-}
-
-Renderer::~Renderer() {
-	free(m_depth_buffer);
-	free(m_screen_buffer);
-
-	free(m_rendering_plane_x);
-	free(m_rendering_plane_y);
-}
-
-void Renderer::updateFOV(const float &fov) {
-	m_distance_to_plane = 1. / tanf(fov/2.);
-	updateRenderingPlane();
-}
-
-void Renderer::updateRenderingPlane() {
-	for (int x = 0; x < m_width; ++x) {
-		m_rendering_plane_x[x] = m_aspect_ratio * ((float) x / ((float) m_width - 1) - .5);
-	}
-	
-	for (int y = 0; y < m_height; ++y) {
-		m_rendering_plane_y[y] = (float) y / ((float) m_height - 1) - .5;
-	}
-}
 
 float get_distance(const vec3f &pos, const std::vector<Object*> &objects, Object * closest) {
 	float distance = FINF;
@@ -89,7 +51,7 @@ vec3f estimateNormal(const vec3f &pos, const std::vector<Object*> &objects) {
 	const vec3f dir = normalize(pos);
 	vec3f h;
 	Object * o;
-
+	
 	float xp, xm;
 	float yp, ym;
 	float zp, zm;
@@ -160,10 +122,6 @@ const mat3f viewMatrix(const vec3f &eye, const vec3f &center, const vec3f &up) {
 	return mat3f { s, u, { -f.x, -f.y, -f.z }};
 }
 
-void setPixel(const int &pointer, u8 * buffer, const vec3f &color) {
-
-}
-
 template<class T>
 void clearBuffer(T * buffer, const int &size) {
 	for(int i = 0; i < size; ++i) {
@@ -171,31 +129,28 @@ void clearBuffer(T * buffer, const int &size) {
 	}
 }
 
-void Renderer::render(const vec3f &camera_position, const vec3f &camera_rotation, const std::vector<Object*> &objects) {
-	clearBuffer(m_screen_buffer, m_width*m_height);
-	clearBuffer(m_depth_buffer, m_width*m_height);
+void Renderer_CPU::render(const vec3f &camera_position, const vec3f &camera_rotation, const std::vector<Object*> &objects) {
+	clearBuffer(Renderer::m_screen_buffer, Renderer::m_width*Renderer::m_height);
+	clearBuffer(Renderer::m_depth_buffer, Renderer::m_width*Renderer::m_height);
 
 	int pointer = 0;
 
 	const mat3f view_to_world = viewMatrix(camera_position, { 0, 0, 0 }, { 0, 1, 0 });
-//	printf ("%03f %03f %03f\n", view_to_world.a.x, view_to_world.a.y, view_to_world.a.z);
-//	printf ("%03f %03f %03f\n", view_to_world.b.x, view_to_world.b.y, view_to_world.b.z);
-//	printf ("%03f %03f %03f\n", view_to_world.c.x, view_to_world.c.y, view_to_world.c.z);
 
-	for (int y = 0; y < m_height; ++y) {
-		for (int x = 0; x < m_width; ++x) {
-			const vec3f view_dir = mul(view_to_world, normalize(vec3f { m_rendering_plane_x[x], m_rendering_plane_y[y], m_distance_to_plane }));
+	for (int y = 0; y < Renderer::m_height; ++y) {
+		for (int x = 0; x < Renderer::m_width; ++x) {
+			const vec3f view_dir = mul(view_to_world, normalize(vec3f { Renderer::m_rendering_plane_x[x], Renderer::m_rendering_plane_y[y], Renderer::m_distance_to_plane }));
 			
 			vec3f hit;
 			Object * closest;
 			float total_distance = 0;
-
+			
 			int has_hit = sceneSDF(camera_position, view_dir, objects, hit, total_distance, closest);
-			m_depth_buffer[pointer] = total_distance;
+			Renderer::m_depth_buffer[pointer] = total_distance;
 			
 			if (total_distance >= MAX_DISTANCE - EPSILON) {
 				u32 final_color = 0xFF << 24;
-				m_screen_buffer[pointer] = final_color;
+				Renderer::m_screen_buffer[pointer] = final_color;
 			} else {
 				vec3f pos = {
 					camera_position.x + total_distance * view_dir.x,
@@ -210,27 +165,12 @@ void Renderer::render(const vec3f &camera_position, const vec3f &camera_rotation
 
 				vec3f color = phongIllumination(k_a, k_d, k_s, shininess, pos, camera_position, objects, closest);			
 				
-	//			if (color.x != 0 || color.y != 0 || color.z !=0) {
-	//				printf("%04d %04d: %02hhx %02hhx %02hhx\n", x, y, (int) (color.x*255), (int) (color.y*255), (int) (color.z*255));
-	//			}
-
 				int final_color = 0xFF << 24 | ((u8) (color.x * 255)) << 16 | ((u8) (color.y * 255)) << 8 | (u8) (color.z * 255);
 				
-				m_screen_buffer[pointer] = final_color;
-
-/*				m_screen_buffer[pointer + 0] = 255;
-				m_screen_buffer[pointer + 1] = (u8) (color.x * 255);
-				m_screen_buffer[pointer + 2] = (u8) (color.y * 255);
-				m_screen_buffer[pointer + 3] = (u8) (color.z * 255);*/
+				Renderer::m_screen_buffer[pointer] = final_color;
 			}
-
-
 
 			++pointer;
 		}
 	}
-}
-
-u32 * Renderer::getScreenBuffer() const {
-	return m_screen_buffer;
 }
