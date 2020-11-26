@@ -4,16 +4,15 @@
 
 APP_NAME=app
 
-ifeq ($(OS),Windows_NT)
-	APP_NAME+=.exe
-endif
-
 # ---
 # Build tools and flags
 # ---
 
 CC=g++
 GPU_CC:=
+
+LFLAGS:=-lm
+FLAGS=`sdl2-config --cflags --libs`
 
 NVCC_RESULT:=$(shell which nvcc 2> NULL)
 NVCC:=$(notdir $(NVCC_RESULT))
@@ -24,9 +23,6 @@ else
 	GPU_CC:=g++
 	LFLAGS:=-lOpenCL $(LFLAGS)
 endif
-
-LFLAGS:=-lm
-FLAGS=`sdl2-config --cflags --libs`
 
 # ---
 # Directories and sources
