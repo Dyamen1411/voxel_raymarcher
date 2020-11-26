@@ -2,8 +2,8 @@
 
 #include "graphics/renderer_CPU.h"
 
-#define EPSILON (float) .0001
-#define MAX_STEPS 255
+#define EPSILON (float) .001
+#define MAX_STEPS 25
 #define MAX_DISTANCE 10
 
 float get_distance(const vec3f &pos, const std::vector<Object*> &objects, Object * closest) {
@@ -149,7 +149,7 @@ void Renderer_CPU::render(const vec3f &camera_position, const vec3f &camera_rota
 			m_depth_buffer[pointer] = total_distance;
 			
 			if (total_distance >= MAX_DISTANCE - EPSILON) {
-				u32 final_color = 0xFF << 24;
+				u32 final_color = 0xFF << 24 | 0xFF << 16;
 				m_screen_buffer[pointer] = final_color;
 			} else {
 				vec3f pos = {

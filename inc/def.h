@@ -12,6 +12,13 @@ template<class T>
 struct vec3 { T x, y, z; };
 typedef vec3<float> vec3f;
 
+struct code_by_mode {
+	public:
+		float (*CPU_SDF)(const vec3f &pos);
+		char * OCL_SDF;
+		char * CUDA_SDF;
+};
+
 template<class T>
 vec3<T> normalize(const vec3<T> &v) {
 	T len = sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);

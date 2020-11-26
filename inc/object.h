@@ -43,7 +43,16 @@ class Object {
 			return m_uuid;
 		}
 
-	private:
+		int operator==(const Object &o) {
+			return std::string(m_uuid) == std::string(o.getUUID());
+		}
+
+		static std::vector<Object*> * getIdentifiers() {
+			static std::vector<Object*> identifiers;
+			return &identifiers;
+		}
+
+	protected:
 		UUID m_uuid;
 		vec3f m_pos;
 		vec3f m_rot;
@@ -51,6 +60,9 @@ class Object {
 		std::vector<Object*> m_children;
 
 		int m_is_visible = 1;
+
+		std::string m_opencl_SDF_code;
+		std::string m_CUDA_SDF_code;
 };
 
 #endif

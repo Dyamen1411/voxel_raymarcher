@@ -28,8 +28,8 @@ class Renderer {
 		float m_aspect_ratio;
 		double * m_depth_buffer;
 		u32 * m_screen_buffer;
-		
-		std::string m_name;
+
+		//unordered_map<Object, >
 };
 
 #endif
