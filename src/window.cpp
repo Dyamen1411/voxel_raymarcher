@@ -74,4 +74,6 @@ void Window::updateFrameBuffer(const u32 * buffer) {
 	} else {
 		printf("Could not render screen buffer!\nSDL_Error: %s\n", SDL_GetError());
 	}
+
+	SDL_Delay(7);
 }

@@ -14,7 +14,7 @@ GPU_CC:=
 LFLAGS:=-lm
 FLAGS=`sdl2-config --cflags --libs`
 
-NVCC_RESULT:=$(shell which nvcc 2> NULL)
+NVCC_RESULT:=$(shell which nvcc 2> /dev/null)
 NVCC:=$(notdir $(NVCC_RESULT))
 
 ifeq ($(NVCC_TEST),nvcc)

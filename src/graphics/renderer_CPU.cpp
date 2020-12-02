@@ -2,12 +2,12 @@
 
 #include "graphics/renderer_CPU.h"
 
-#define EPSILON (float) .001
-#define MAX_STEPS 25
+#define EPSILON (float) .0001
+#define MAX_STEPS 100
 #define MAX_DISTANCE 10
 
-float get_distance(const vec3f &pos, const std::vector<Object*> &objects, Object * closest) {
-	float distance = FINF;
+float get_distance(const vec3f &pos, const std::vector<Object*> &objects, Object * &closest) {
+	float distance = MAX_DISTANCE;
 
 	for (auto it = objects.begin(); it != objects.end(); ++it) {
 		if ((*it)->isVisible()) {
@@ -22,7 +22,7 @@ float get_distance(const vec3f &pos, const std::vector<Object*> &objects, Object
 	return distance;
 }
 
-int sceneSDF(const vec3f &camera_position, const vec3f &ray_step, const std::vector<Object*> &objects, vec3f &hit, float &total_distance, Object * closest) {
+int sceneSDF(const vec3f &camera_position, const vec3f &ray_step, const std::vector<Object*> &objects, vec3f &hit, float &total_distance, Object * &closest) {
 	hit = camera_position;
 	total_distance = 0;
 
@@ -35,7 +35,7 @@ int sceneSDF(const vec3f &camera_position, const vec3f &ray_step, const std::vec
 		hit.y += ray_step.y * distance;
 		hit.z += ray_step.z * distance;	
 
-		if (distance >= MAX_DISTANCE) {
+		if (total_distance >= MAX_DISTANCE) {
 			return 0;
 		}
 

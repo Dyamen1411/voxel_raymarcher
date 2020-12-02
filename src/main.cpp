@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <vector>
 
-#include "graphics/renderer_CPU.h"
+#include "graphics/renderer_OCL.h"
 #include "scene.h"
 #include "sphere.h"
 #include "window.h"
@@ -15,13 +15,13 @@ int main(int argc, char ** argv) {
 	Window window(W, H);
 	window.init("test");
 
-	Renderer_CPU renderer(W, H, 90);
+	Renderer_OCL renderer(W, H, 90);
 
 	Scene scene;
 	scene.attachRenderer(&renderer);
 
-	Sphere sphere1(1, {0, 0, -5});
-	Sphere sphere2(1, {0, 0,  5});
+	Sphere sphere1(1, { 1, 0, -5});
+	Sphere sphere2(1, {-1, 0, -5});
 
 	{
 		std::vector<Object*> identifiers = *Object::getIdentifiers();
@@ -49,14 +49,13 @@ int main(int argc, char ** argv) {
 			}
 		}
 		
-		printf("rendering...\n");
 		scene.render({0, sin(theta)/2.f, -1}, {0, 0, 0});
 		u32 * screen_buffer = scene.getRenderer()->getScreenBuffer();
-		printf("rendered!\n");
 		
 		window.updateFrameBuffer(screen_buffer);
 		
 		theta += .1f;
+		renderer.updateDy(theta);
 	}
 
 	window.cleanup();
